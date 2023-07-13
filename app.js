@@ -4,12 +4,10 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 const swaggerJSDoc = require('swagger-jsdoc');
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-const customRouter = require('./routes');
 const swaggerUi = require('swagger-ui-express');
 let {swaggerOptions} = require('./config/MainConfig');
-let fs = require('fs');
+var fs = require('fs');
+var path = require('path');
 
 const swaggerSpec = swaggerJSDoc(swaggerOptions);
 
@@ -26,15 +24,25 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-module.exports = function(app){
-  fs.readdirSync(__dirname).forEach(function(file) {
-    if (file == "index.js") return;
-    let name = file.substring(0, file.indexOf('.'));
-    require('./' + name)(app);
+// Initialize ALL routes including subfolders
+function recursiveRoutes(folderName) {
+  fs.readdirSync(folderName).forEach(function(file) {
+
+    var fullName = path.join(folderName, file);
+    var stat = fs.lstatSync(fullName);
+
+    if (stat.isDirectory()) {
+      recursiveRoutes(fullName);
+    } else if (file.toLowerCase().indexOf('.js')) {
+      //console.log("require('" + './' + fullName + "')");
+      require('./' + fullName)(app);
+    }
   });
 }
 
-app.use('/', customRouter)
+recursiveRoutes('routes');
+
+//app.use('/', customRouter)
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

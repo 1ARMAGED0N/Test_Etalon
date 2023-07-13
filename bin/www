@@ -14,7 +14,8 @@ var http = require('http');
 
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
-
+console.log('listening http://localhost:'+port)
+console.log('documentation http://localhost:'+port+'/docsapi/')
 /**
  * Create HTTP server.
  */
